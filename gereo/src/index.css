@@ -1,1 +1,7 @@
 @import "tailwindcss";
+@tailwind utilities;
+
+/* On peut ajouter ici quelques styles de base pour le corps de la page */
+body {
+  @apply bg-gray-100 font-sans;
+}

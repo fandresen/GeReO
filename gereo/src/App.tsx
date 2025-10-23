@@ -1,10 +1,11 @@
 
 import './App.css'
+import { LoginPage } from './features/auth/pages/LoginPage'
 function App() {
 
   return (
     <>
-     <h1 className='text-2xl text-sky-400 text-center mt-8'>Hello from GEREO</h1>
+    <LoginPage/>
     </>
   )
 }
