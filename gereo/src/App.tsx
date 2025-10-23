@@ -4,6 +4,9 @@ import { useAuth } from './context/AuthContext';
 import { LoginPage } from './features/auth/pages/LoginPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { AppLayout } from './components/layout/AppLayout';
+import { ProductsPage } from './pages/ProductsPage';
+import { StockEntryPage } from './pages/StockEnntryPage';
+import { SalesPage } from './pages/SalesPages';
 // Créez des fichiers simples pour les autres pages pour l'instant
 // ex: export const ProductsPage = () => <h1>Produits</h1>;
 
@@ -22,6 +25,9 @@ function App() {
         <>
           <Route element={<AppLayout />}>
             <Route index element={<DashboardPage />} />
+            <Route path="products" element={<ProductsPage />} />
+            <Route path="stock-entry" element={<StockEntryPage />} />
+            <Route path="sales" element={<SalesPage />} />
             {/* <Route path="products" element={<ProductsPage />} /> */}
             {/* ... autres routes ... */}
           </Route>

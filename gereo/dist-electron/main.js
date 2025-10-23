@@ -1884,10 +1884,147 @@ ipcMain.handle("auth:login", async (_, { username, password }) => {
     if (!isPasswordValid) {
       return { success: false, message: "Mot de passe incorrect." };
     }
-    return { success: true, user: { id: user.id, username: user.username, role: user.role } };
+    return {
+      success: true,
+      user: { id: user.id, username: user.username, role: user.role }
+    };
   } catch (error) {
     console.error("Login error:", error);
     return { success: false, message: "Une erreur est survenue." };
+  }
+});
+ipcMain.handle("products:get", async () => {
+  const knex2 = getKnex();
+  try {
+    const products = await knex2("products").select("*");
+    return { success: true, products };
+  } catch (error) {
+    console.error("Error fetching products:", error);
+    return { success: false, message: "Une erreur est survenue." };
+  }
+});
+ipcMain.handle("product:add", async (_, productData) => {
+  const knex2 = getKnex();
+  try {
+    const [insertedProduct] = await knex2("products").insert(productData).returning("*");
+    return { success: true, product: insertedProduct };
+  } catch (error) {
+    console.error("Error adding product:", error);
+    return { success: false, message: "Une erreur est survenue." };
+  }
+});
+ipcMain.handle("stock-entry:add", async (_, entryData) => {
+  const knex2 = getKnex();
+  try {
+    await knex2("stock_movements").insert(entryData);
+    await knex2("products").where("id", entryData.product_id).increment("current_stock", entryData.quantity);
+    return { success: true };
+  } catch (error) {
+    console.error("Error adding stock entry:", error);
+    return { success: false, message: "Une erreur est survenue." };
+  }
+});
+ipcMain.handle("stock-entries:get", async () => {
+  const knex2 = getKnex();
+  try {
+    const entries = await knex2("stock_movements").join("products", "stock_movements.product_id", "=", "products.id").select("stock_movements.*", "products.name as product_name").orderBy("movement_date", "desc");
+    return { success: true, entries };
+  } catch (error) {
+    console.error("Error fetching stock entries:", error);
+    return { success: false, message: "Une erreur est survenue." };
+  }
+});
+ipcMain.handle("settings:get", async () => {
+  const knex2 = getKnex();
+  try {
+    const settingsArray = await knex2("settings").select("*");
+    const settings = settingsArray.reduce((acc, setting) => {
+      acc[setting.key] = setting.value;
+      return acc;
+    }, {});
+    return { success: true, settings };
+  } catch (error) {
+    console.error("Error fetching settings:", error);
+    return {
+      success: false,
+      message: "Erreur lors de la récupération des paramètres."
+    };
+  }
+});
+ipcMain.handle("sale:save", async (_, saleData) => {
+  const knex2 = getKnex();
+  const {
+    customer_name,
+    is_credit_sale,
+    items,
+    total_amount,
+    discount_total,
+    amount_paid
+  } = saleData;
+  const trx = await knex2.transaction();
+  try {
+    let customerId = null;
+    if (customer_name) {
+      let customer = await trx("customers").where("name", customer_name).first();
+      if (!customer) {
+        const [newCustomer] = await trx("customers").insert({ name: customer_name }).returning("id");
+        customerId = typeof newCustomer === "object" ? newCustomer.id : newCustomer;
+      } else {
+        customerId = customer.id;
+      }
+    }
+    const amount_due = total_amount - amount_paid;
+    const status = amount_due <= 0 ? "PAID" : "UNPAID";
+    const [invoice] = await trx("invoices").insert({
+      customer_id: customerId,
+      invoice_date: /* @__PURE__ */ new Date(),
+      total_amount,
+      discount: discount_total,
+      // Store total discount amount
+      amount_paid,
+      amount_due,
+      status
+    }).returning("id");
+    const invoiceId = typeof invoice === "object" ? invoice.id : invoice;
+    for (const item of items) {
+      await trx("invoice_items").insert({
+        invoice_id: invoiceId,
+        product_id: item.product_id,
+        quantity: item.quantity,
+        unit_price: item.unit_price_after_discount,
+        // Save the price actually charged
+        total_price: item.total
+      });
+      await trx("products").where("id", item.product_id).decrement("current_stock", item.quantity);
+      await trx("stock_movements").insert({
+        product_id: item.product_id,
+        movement_type: "SALE",
+        quantity: -item.quantity,
+        // Negative quantity for sale
+        unit_price: item.unit_price_after_discount,
+        // Price sold at
+        movement_date: /* @__PURE__ */ new Date(),
+        notes: `Invoice ID: ${invoiceId}`
+      });
+    }
+    if (customerId && amount_due > 0) {
+      await trx("customers").where("id", customerId).increment("total_debt", amount_due);
+    }
+    await trx.commit();
+    return { success: true, invoiceId };
+  } catch (error) {
+    await trx.rollback();
+    console.error("Error saving sale:", error);
+    if (error.message.includes("CHECK constraint failed")) {
+      return {
+        success: false,
+        message: "Erreur: Stock insuffisant pour un des produits."
+      };
+    }
+    return {
+      success: false,
+      message: "Erreur lors de l'enregistrement de la vente."
+    };
   }
 });
 app.whenReady().then(() => {

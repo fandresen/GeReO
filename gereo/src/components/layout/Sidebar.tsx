@@ -7,7 +7,8 @@ const Icon = ({ name }) => <span className="material-symbols-outlined mr-3">{nam
 
 const navItems = [
   { name: 'Dashboard', icon: 'dashboard', path: '/' },
-  { name: 'Produits', icon: 'inventory_2', path: '/products' },
+  { name: 'Products', icon: 'inventory', path: '/products' },
+  { name: 'Stock Entry', icon: 'add_shopping_cart', path: '/stock-entry' },
   { name: 'Ventes', icon: 'shopping_cart', path: '/sales' },
   { name: 'Dépenses', icon: 'receipt_long', path: '/expenses' },
   { name: 'Rapports', icon: 'bar_chart', path: '/reports' },

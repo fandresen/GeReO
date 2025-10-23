@@ -26,3 +26,18 @@ contextBridge.exposeInMainWorld('ipcRenderer', {
 contextBridge.exposeInMainWorld('auth', {
   login: (credentials: { username:string, password:string }) => ipcRenderer.invoke('auth:login', credentials),
 });
+
+contextBridge.exposeInMainWorld('stock', {
+  getProducts: () => ipcRenderer.invoke('products:get'),
+  addProduct: (productData) => ipcRenderer.invoke('product:add', productData),
+  addStockEntry: (entryData) => ipcRenderer.invoke('stock-entry:add', entryData),
+  getStockEntries: () => ipcRenderer.invoke('stock-entries:get'),
+});
+
+contextBridge.exposeInMainWorld('sales', {
+  saveSale: (saleData) => ipcRenderer.invoke('sale:save', saleData),
+});
+
+contextBridge.exposeInMainWorld('settings', {
+  getSettings: () => ipcRenderer.invoke('settings:get'),
+});
