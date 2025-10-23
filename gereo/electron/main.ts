@@ -1,8 +1,9 @@
-import { app, BrowserWindow } from 'electron'
+import { app, BrowserWindow, ipcMain } from 'electron'
 import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
-import { initDatabase } from '../src/lib/db'
+import { initDatabase,getKnex } from '../src/lib/db'
+import bcrypt from 'bcryptjs'
 
 const require = createRequire(import.meta.url)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -65,6 +66,26 @@ app.on('activate', () => {
     createWindow()
   }
 })
+
+ipcMain.handle('auth:login', async (_, { username, password }) => {
+  const knex = getKnex(); // On récupère l'instance au moment de l'appel
+  try {
+    const user = await knex('users').where({ username }).first();
+    if (!user) {
+      return { success: false, message: 'Nom d\'utilisateur incorrect.' };
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      return { success: false, message: 'Mot de passe incorrect.' };
+    }
+
+    return { success: true, user: { id: user.id, username: user.username, role: user.role } };
+  } catch (error) {
+    console.error('Login error:', error);
+    return { success: false, message: 'Une erreur est survenue.' };
+  }
+});
 
 app.whenReady().then(()=>{
   initDatabase();

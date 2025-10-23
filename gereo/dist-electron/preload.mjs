@@ -20,3 +20,6 @@ electron.contextBridge.exposeInMainWorld("ipcRenderer", {
   // You can expose other APTs you need here.
   // ...
 });
+electron.contextBridge.exposeInMainWorld("auth", {
+  login: (credentials) => electron.ipcRenderer.invoke("auth:login", credentials)
+});

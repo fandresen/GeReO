@@ -22,3 +22,7 @@ contextBridge.exposeInMainWorld('ipcRenderer', {
   // You can expose other APTs you need here.
   // ...
 })
+
+contextBridge.exposeInMainWorld('auth', {
+  login: (credentials: { username:string, password:string }) => ipcRenderer.invoke('auth:login', credentials),
+});

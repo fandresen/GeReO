@@ -17,7 +17,7 @@ export default defineConfig({
           build: {
             rollupOptions: {
               // Indiquer à Vite que ces paquets sont externes
-              external: ['better-sqlite3', 'knex'],
+              external: ['better-sqlite3', 'knex','sqlite3'],
             },
           },
         },

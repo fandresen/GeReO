@@ -1,7 +1,23 @@
 @import "tailwindcss";
-@tailwind utilities;
+@plugin "@tailwindcss/forms";
 
-/* On peut ajouter ici quelques styles de base pour le corps de la page */
-body {
-  @apply bg-gray-100 font-sans;
+@theme {
+  /* === Modes === */
+  --dark-mode: class;
+
+  /* === Couleurs === */
+  --color-primary: #0052CC;
+  --color-background-light: #F4F5F7;
+  --color-background-dark: #101922;
+  --color-text-light: #172B4D;
+  --color-text-light-secondary: #5E6C84;
+  --color-text-dark: #FFFFFF;
+  --color-text-dark-secondary: #A6ADBB;
+  --color-border-light: #DFE1E6;
+  --color-border-dark: #3D4D5E;
+  --color-success: #36B37E;
+  --color-error: #DE350B;
+
+  /* === Typographie === */
+  --font-display: system-ui, sans-serif;
 }
