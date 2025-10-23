@@ -13,6 +13,14 @@ export default defineConfig({
       main: {
         // Shortcut of `build.lib.entry`.
         entry: 'electron/main.ts',
+        vite: {
+          build: {
+            rollupOptions: {
+              // Indiquer à Vite que ces paquets sont externes
+              external: ['better-sqlite3', 'knex'],
+            },
+          },
+        },
       },
       preload: {
         // Shortcut of `build.rollupOptions.input`.
