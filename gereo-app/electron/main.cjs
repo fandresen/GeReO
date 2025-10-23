@@ -38,10 +38,10 @@ function createWindow() {
     },
   });
 
-  // La ligne la plus importante : VITE_DEV_SERVER_URL est fournie par le plugin
-  if (process.env.VITE_DEV_SERVER_URL) {
-    win.loadURL(process.env.VITE_DEV_SERVER_URL);
-    win.webContents.openDevTools(); // Ouvre les outils de dev automatiquement
+  const devServerUrl = process.env.VITE_DEV_SERVER_URL;
+  if (devServerUrl) {
+    win.loadURL(devServerUrl);
+    win.webContents.openDevTools();
   } else {
     win.loadFile(path.join(__dirname, '../dist/index.html'));
   }
@@ -49,7 +49,7 @@ function createWindow() {
 
 app.whenReady().then(async () => {
   await initializeDatabase();
-  createWindow(); // Appel pour créer la fenêtre
+  createWindow();
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
@@ -59,3 +59,6 @@ app.whenReady().then(async () => {
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
 });
+
+// C'est ici que viendra votre API
+// ipcMain.handle('get-products', async () => { ... });
